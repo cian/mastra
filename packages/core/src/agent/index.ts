@@ -1742,7 +1742,9 @@ export class Agent<
 
         let threadObject: StorageThreadType | undefined = undefined;
         const existingThread = await memory.getThreadById({ threadId });
+        let shouldGetMemoryMessages = false;
         if (existingThread) {
+          shouldGetMemoryMessages = true;
           if (
             (!existingThread.metadata && thread.metadata) ||
             (thread.metadata && !deepEqual(existingThread.metadata, thread.metadata))
@@ -1761,12 +1763,15 @@ export class Agent<
             title: thread.title,
             memoryConfig,
             resourceId,
-            saveThread: false,
+            saveThread: true,
           });
+          const config = memory.getMergedThreadConfig(memoryConfig);
+          shouldGetMemoryMessages =
+            typeof config?.semanticRecall === 'object' && config?.semanticRecall?.scope === 'resource';
         }
 
         let [memoryMessages, memorySystemMessage] = await Promise.all([
-          existingThread
+          shouldGetMemoryMessages
             ? this.getMemoryMessages({
                 resourceId,
                 threadId: threadObject.id,
@@ -2712,8 +2717,10 @@ Message ${msg.threadId && msg.threadId !== threadObject.id ? 'from previous conv
 
         let threadObject: StorageThreadType | undefined = undefined;
         const existingThread = await memory.getThreadById({ threadId: thread?.id });
+        let shouldGetMemoryMessages = false;
 
         if (existingThread) {
+          shouldGetMemoryMessages = true;
           if (
             (!existingThread.metadata && thread.metadata) ||
             (thread.metadata && !deepEqual(existingThread.metadata, thread.metadata))
@@ -2732,12 +2739,15 @@ Message ${msg.threadId && msg.threadId !== threadObject.id ? 'from previous conv
             title: thread.title,
             memoryConfig,
             resourceId,
-            saveThread: false,
+            saveThread: true,
           });
+          const config = memory.getMergedThreadConfig(memoryConfig);
+          shouldGetMemoryMessages =
+            typeof config?.semanticRecall === 'object' && config?.semanticRecall?.scope === 'resource';
         }
 
         let [memoryMessages, memorySystemMessage] = await Promise.all([
-          existingThread
+          shouldGetMemoryMessages
             ? this.getMemoryMessages({
                 resourceId,
                 threadId: threadObject.id,
